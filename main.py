@@ -7,7 +7,7 @@ from image_process import dump
 
 PUZZLE_URL = 'https://en.gamesaien.com/game/fruit_box/'
 CANVAS_ID = 'canvas'
-PLAY_IMAGE_FILE = 'play_text.png'
+PLAY_IMAGE_FILE = 'play.png'
 TEMP_SCREENSHOT_FILE = 'canvas.png'
 TEMPLATE_FILE_LIST = (
 	('no1.png', 1),
