@@ -4,7 +4,7 @@ import numpy as np
 
 def dump(matrix):
 	for r in matrix:
-		print(' ', r, ',')
+		print(' '.join(map(str, r)))
 
 use_max = True
 
