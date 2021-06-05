@@ -22,8 +22,8 @@ class CanvasView:
     def __canvas_size(self):
         return (int(self.canvas.size['width']), int(self.canvas.size['height']))
 
-    def click_image(self, image_file, wait_timeout = 10):
-        for i in range(wait_timeout):
+    def click_image_with_timeout(self, image_file, timeout):
+        for i in range(timeout):
             rect = find_image(self.canvas.screenshot_as_png, image_file, self.__canvas_size())
             if rect:
                 self.__click((rect[0]+rect[2])//2, (rect[1]+rect[3])//2)

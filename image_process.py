@@ -103,18 +103,6 @@ def offset_to_index(l, h, w):
 		offset_matrix[y_idx][x_idx] = (yxn[0], yxn[1], yxn[0]+h, yxn[1]+w)
 	return (tuple(map(tuple, matrix)), tuple(map(tuple, offset_matrix)))
 
-template_filelist = (
-	('no1_32x30.png', 1),
-	('no2_32x30.png', 2),
-	('no3_32x30.png', 3),
-	('no4_32x30.png', 4),
-	('no5_32x30.png', 5),
-	('no6_32x30.png', 6),
-	('no7_32x30.png', 7),
-	('no8_32x30.png', 8),
-	('no9_32x30.png', 9)
-)
-
 marginY = 5
 marginX = 7
 
@@ -127,7 +115,7 @@ marginX = 7
 
 #dump(matrix)
 
-def image_file_to_matrix(image_file):
+def image_file_to_matrix(image_file, template_filelist):
 	l = []
 	h = 0
 	w = 0
@@ -136,6 +124,6 @@ def image_file_to_matrix(image_file):
 	for template_file, label in template_filelist:
 		template = cv2.imread(template_file)
 		h, w = template.shape[:2]
-		template = template[marginY:-marginY, marginX:-marginX]
+		#template = template[marginY:-marginY, marginX:-marginX]
 		pattern_recognition(src_image, template, label, l)
 	return offset_to_index(l, h, w)
