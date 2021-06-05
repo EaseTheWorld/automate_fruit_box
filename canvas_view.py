@@ -12,6 +12,10 @@ class CanvasView:
         self.driver.get(url)
         self.canvas = self.driver.find_element_by_id(canvas_id)
 
+    def close(self):
+        if self.driver:
+            self.driver.close()
+
     def __click(self, x, y):
         action = ActionChains(self.driver)
         action.move_to_element_with_offset(self.canvas, x, y)
@@ -34,5 +38,14 @@ class CanvasView:
     def save_screenshot_file(self, image_file_to_save):
         save_image_with_size(self.canvas.screenshot_as_png, self.__canvas_size(), image_file_to_save)
 
-    def drag_and_drop(self, x1, y1, x2, y2):
-        True
+    def drag_and_drop(self, x1, y1, x2, y2, wait=4):
+        action = ActionChains(self.driver)
+        action.move_to_element_with_offset(self.canvas, x1, y1)
+        action.click_and_hold()
+        # wait dragging is applied
+        for i in range(1, wait):
+            x = x2-1 if i % 2 == 0 else x2
+            action.move_to_element_with_offset(self.canvas, x, y2)
+        action.move_to_element_with_offset(self.canvas, x2, y2)
+        action.release()
+        action.perform()

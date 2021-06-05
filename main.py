@@ -3,7 +3,8 @@ import sys
 from canvas_view import CanvasView
 from image_process import image_file_to_matrix
 from image_process import dump
-#import solve
+from solve import find_best_move
+from solve import clear_range
 
 PUZZLE_URL = 'https://en.gamesaien.com/game/fruit_box/'
 CANVAS_ID = 'canvas'
@@ -38,14 +39,15 @@ print(TEMP_SCREENSHOT_FILE, 'saved.')
 number_matrix, offset_matrix = image_file_to_matrix(TEMP_SCREENSHOT_FILE, TEMPLATE_FILE_LIST)
 print('converted to number matrix')
 dump(number_matrix)
-sys.exit()
 
 while True:
-    score, move = solve.find_best_move(number_matrix, SOLVE_DEPTH)
-    if move:
-        solve.apply_move(number_matrix, move)
+    score, move_list = find_best_move(number_matrix, SOLVE_DEPTH)
+    if move_list:
+        move = move_list[0]
+        print(move)
+        number_matrix = clear_range(number_matrix, move)
         r1, c1, r2, c2 = move
-        v.drag_and_drop(offset_matrix[r1][c1][0], offset_matrix[r1][c1][1],
-            offset_matrix[r2][c2][0], offset_matrix[r2][c2][1])
+        v.drag_and_drop(offset_matrix[r1][c1][1], offset_matrix[r1][c1][0],
+            offset_matrix[r2][c2][3], offset_matrix[r2][c2][2])
     else:
         break
