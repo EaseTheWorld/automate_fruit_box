@@ -23,7 +23,6 @@ def find_image(src_png_buf, template_file, src_size):
 	h, w = template.shape[:2]
 	result = cv2.matchTemplate(src_image, template, cv2.TM_CCOEFF_NORMED)
 	_, max_val, _, max_loc = cv2.minMaxLoc(result)
-	print(max_val)
 	if max_val > 0.90:
 		return (max_loc[0], max_loc[1], max_loc[0]+w, max_loc[1]+h)
 	else:

@@ -1,5 +1,5 @@
 import sys
-import canvas_view
+from canvas_view import CanvasView
 #from image_process import image_file_to_matrix
 #import solve
 
@@ -11,8 +11,15 @@ SOLVE_DEPTH = 1
 
 
 v = CanvasView(PUZZLE_URL, CANVAS_ID)
+print('page loaded.')
+
+if not v.click_image(PLAY_IMAGE_FILE):
+    print('Error :', PLAY_IMAGE_FILE, 'not matched.')
+    sys.exit(1)
+print('play clicked.')
+
 sys.exit()
-v.click_image(PLAY_IMAGE_FILE)
+
 v.screenshot(TEMP_SCREENSHOT_FILE)
 
 number_matrix, offset_matrix = image_file_to_matrix(TEMP_SCREENSHOT_FILE)
