@@ -1,3 +1,4 @@
+import time
 import sys
 from canvas_view import CanvasView
 #from image_process import image_file_to_matrix
@@ -18,9 +19,11 @@ if not v.click_image(PLAY_IMAGE_FILE):
     sys.exit(1)
 print('play clicked.')
 
-sys.exit()
+time.sleep(1)
+v.save_screenshot_file(TEMP_SCREENSHOT_FILE)
+print(TEMP_SCREENSHOT_FILE, 'saved.')
 
-v.screenshot(TEMP_SCREENSHOT_FILE)
+sys.exit()
 
 number_matrix, offset_matrix = image_file_to_matrix(TEMP_SCREENSHOT_FILE)
 

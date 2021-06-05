@@ -13,20 +13,26 @@ if use_max:
 else:
 	method = cv2.TM_SQDIFF_NORMED
 
+def save_image_with_size(src_png_buf, target_size, target_file):
+    array_buf = np.frombuffer(src_png_buf, np.uint8)
+    src_image = cv2.imdecode(array_buf, cv2.IMREAD_COLOR)
+    src_image = cv2.resize(src_image, target_size)
+    cv2.imwrite(target_file, src_image)
+
 def find_image(src_png_buf, template_file, src_size):
-	array_buf = np.frombuffer(src_png_buf, np.uint8)
-	src_image = cv2.imdecode(array_buf, cv2.IMREAD_COLOR)
-	# normalize OS display scaling
-	if src_size:
-		src_image = cv2.resize(src_image, src_size)
-	template = cv2.imread(template_file)
-	h, w = template.shape[:2]
-	result = cv2.matchTemplate(src_image, template, cv2.TM_CCOEFF_NORMED)
-	_, max_val, _, max_loc = cv2.minMaxLoc(result)
-	if max_val > 0.90:
-		return (max_loc[0], max_loc[1], max_loc[0]+w, max_loc[1]+h)
-	else:
-		return None
+    array_buf = np.frombuffer(src_png_buf, np.uint8)
+    src_image = cv2.imdecode(array_buf, cv2.IMREAD_COLOR)
+    # normalize OS display scaling
+    if src_size:
+        src_image = cv2.resize(src_image, src_size)
+    template = cv2.imread(template_file)
+    h, w = template.shape[:2]
+    result = cv2.matchTemplate(src_image, template, cv2.TM_CCOEFF_NORMED)
+    _, max_val, _, max_loc = cv2.minMaxLoc(result)
+    if max_val > 0.90:
+        return (max_loc[0], max_loc[1], max_loc[0]+w, max_loc[1]+h)
+    else:
+        return None
 
 
 # Read the images from the file
