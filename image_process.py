@@ -4,14 +4,25 @@ import numpy as np
 
 def dump(matrix):
 	for r in matrix:
-		print(' '.join(map(str, r)))
+		print(' '.join(map(lambda x : ' ' if x == 0 else str(x), r)))
 
-use_max = True
+class Node:
+    def __init__(self, y, x, h, w, label, confidence):
+        self.y = y
+        self.x = x
+        self.h = h
+        self.w = w
+        self.label = label
+        self.confidence = confidence
 
-if use_max:
-	method = cv2.TM_CCOEFF_NORMED
-else:
-	method = cv2.TM_SQDIFF_NORMED
+    def get_label(self):
+        return self.label
+
+    def get_rect(self):
+        return (self.y, self.x, self.y+self.h, self.x+self.w)
+
+    def dump(self):
+        return (self.label, self.confidence, self.y, self.x)
 
 def save_image_with_size(src_png_buf, target_size, target_file):
     array_buf = np.frombuffer(src_png_buf, np.uint8)
@@ -35,77 +46,55 @@ def find_image(src_png_buf, template_file, src_size):
         return None
 
 
-# Read the images from the file
-def pattern_recognition(src_image, template, label, l, dst_image=None):
-	h, w = template.shape[:2]
-	
-	result = cv2.matchTemplate(src_image, template, method)
-	
-	if use_max:
-		threshold = 0.90
-		max_val = 1
-		while max_val > threshold:
-		    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-		    if max_val > threshold:
-		    	x,y = max_loc
-		    	result[y-h//2:y+h//2+1, x-w//2:x+w//2+1] = 0
-		    	l.append((y,x,label))
-		    	if dst_image:
-			    	cv2.rectangle(dst_image, (x,y), (x+w+1, y+h+1), (0,255,0))
-			    	cv2.putText(dst_image, str(label), (x-5, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0), 1)
-		    	#print('x=', x, ' y=', y, ' val=', max_val)
-	else:
-		threshold = 0.05
-		min_val = 0
-		while min_val < threshold:
-		    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)	
-		    if min_val < threshold:
-		    	x,y = min_loc
-		    	result[y-h//2:y+h//2+1, x-w//2:x+w//2+1] = 1
-		    	if dst_image:
-			    	cv2.rectangle(dst_image, (x,y), (x+w+1, y+h+1), (0,255,0))
-			    	cv2.putText(dst_image, str(label), (x-5, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0), 1)
-		    	#print('x=', x, ' y=', y, ' val=', min_val)
+def pattern_recognition(src_image, template, label, dst_image=None):
+    node_list = []
+    h, w = template.shape[:2]
 
-def offset_to_index(l, h, w):
-	ly = sorted(l, key = lambda yxn : yxn[0])
-	y_map = {}
-	#print(ly)
-	end_offset = -1
-	y_idx = -1
-	for yxn in ly:
-		offset = yxn[0]
-		if offset > end_offset:
-			y_idx += 1
-			start_offset = offset
-			end_offset = start_offset + h
-		y_map[offset] = y_idx
-	
-	lx = sorted(l, key = lambda yxn : yxn[1])
-	x_map = {}
-	#print(lx)
-	end_offset = -1
-	x_idx = -1
-	for yxn in lx:
-		offset = yxn[1]
-		if offset > end_offset:
-			x_idx += 1
-			start_offset = offset
-			end_offset = start_offset + w
-		x_map[offset] = x_idx
-	
-	matrix = list([0] * (x_idx+1) for _ in range(y_idx+1))
-	offset_matrix = list([0] * (x_idx+1) for _ in range(y_idx+1))
-	for yxn in l:
-		y_idx = y_map[yxn[0]]
-		x_idx = x_map[yxn[1]]
-		matrix[y_idx][x_idx] = yxn[2]
-		offset_matrix[y_idx][x_idx] = (yxn[0], yxn[1], yxn[0]+h, yxn[1]+w)
-	return (tuple(map(tuple, matrix)), tuple(map(tuple, offset_matrix)))
+    result = cv2.matchTemplate(src_image, template, cv2.TM_CCOEFF_NORMED)
 
-marginY = 5
-marginX = 7
+    threshold = 0.90
+    max_val = 1
+    while max_val > threshold:
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        if max_val > threshold:
+            x,y = max_loc
+            result[y-h//2:y+h//2+1, x-w//2:x+w//2+1] = 0
+            node_list.append(Node(y,x,h,w,label,max_val))
+            if dst_image:
+                cv2.rectangle(dst_image, (x,y), (x+w+1, y+h+1), (0,255,0))
+                cv2.putText(dst_image, str(label), (x-5, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0), 1)
+    return node_list
 
+def get_node_matrix(l):
+    y_map = {}
+    end_offset = -1
+    y_idx = -1
+    for node in sorted(l, key = lambda node : node.y):
+        if node.y > end_offset:
+            y_idx += 1
+            start_offset = node.y
+            end_offset = start_offset + node.h
+        y_map[node.y] = y_idx
+
+    x_map = {}
+    end_offset = -1
+    x_idx = -1
+    for node in sorted(l, key = lambda node : node.x):
+        if node.x > end_offset:
+            x_idx += 1
+            start_offset = node.x
+            end_offset = start_offset + node.w
+        x_map[node.x] = x_idx
+
+    node_matrix = list([None] * (x_idx+1) for _ in range(y_idx+1))
+    for node in l:
+        y_idx = y_map[node.y]
+        x_idx = x_map[node.x]
+        #if node_matrix[y_idx][x_idx]:
+            #print('y=', y_idx, 'x=', x_idx, 'confusing', node_matrix[y_idx][x_idx].dump(), node.dump())
+        if not node_matrix[y_idx][x_idx] or node.confidence > node_matrix[y_idx][x_idx].confidence:
+            node_matrix[y_idx][x_idx] = node
+    return node_matrix
 
 #print(l)
 
@@ -116,14 +105,15 @@ marginX = 7
 #dump(matrix)
 
 def image_file_to_matrix(image_file, template_filelist):
-	l = []
-	h = 0
-	w = 0
-	src_image = cv2.imread(image_file)
-	dst_image = cv2.imread(image_file)
-	for template_file, label in template_filelist:
-		template = cv2.imread(template_file)
-		h, w = template.shape[:2]
-		#template = template[marginY:-marginY, marginX:-marginX]
-		pattern_recognition(src_image, template, label, l)
-	return offset_to_index(l, h, w)
+    node_list = []
+    src_image = cv2.imread(image_file)
+    #dst_image = cv2.imread(image_file)
+
+    for template_file, label in template_filelist:
+        template = cv2.imread(template_file)
+        node_list += pattern_recognition(src_image, template, label)
+
+    node_matrix = get_node_matrix(node_list)
+    label_matrix = tuple(tuple(map(Node.get_label, row)) for row in node_matrix)
+    rect_matrix = tuple(tuple(map(Node.get_rect, row)) for row in node_matrix)
+    return label_matrix, rect_matrix
