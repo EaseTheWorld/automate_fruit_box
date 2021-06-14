@@ -37,81 +37,43 @@ def dump(matrix):
 funccount = 0
 
 @functools.lru_cache(maxsize=None)
-def find_best_move(matrix, depth):
-	global funccount
-	funccount += 1
-	if depth == 0:
-		return ((0,0), tuple())
-	sm = sum_matrix(matrix)
-	cm = sum_matrix(tuple(tuple(1 if v > 0 else 0 for v in r) for r in matrix))
-	max_score = (0,0)
-	max_score_move_list = ()
-	for r1 in range(len(matrix)):
-		for c1 in range(len(matrix[r1])):
-			for r2 in range(r1, len(matrix)):
-				for c2 in range(c1, len(matrix[r2])):
-					next_move = (r1, c1, r2, c2)
-					rs = range_sum(sm, next_move)
-					if rs == S:
-						rc = range_sum(cm, next_move)
-						next_matrix = clear_range(matrix, next_move)
-						#print('depth', depth, 'next_move', next_move, 'max_score', max_score)
-						#dump(next_matrix)
-						score, next_move_list = find_best_move(next_matrix, depth-1)
-						if score[1] + rc > max_score[1]:
-							max_score = (rc, score[1] + rc)
-							#print('depth', depth, 'max_score', max_score, next_move, next_move_list)
-							max_score_move_list = (next_move,) + next_move_list
-						break
-					elif rs > S:
-						break
-				if c2 == c1:
-					break
-	return (max_score, max_score_move_list)
+def recursive_find_next_move(matrix, depth):
+    global funccount
+    funccount += 1
 
-# find c2 in binary search. useless because w is not big.
-def find_best_move2(matrix, depth):
-	global funccount
-	funccount += 1
-	if depth == 0:
-		return ((0,0), tuple())
-	if matrix in func_cache:
-		return func_cache[matrix]
-	sm = sum_matrix(matrix)
-	cm = sum_matrix(tuple(tuple(1 if v > 0 else 0 for v in r) for r in matrix))
-	max_score = (0,0)
-	max_score_move_list = ()
-	for r1 in range(len(matrix)):
-		for c1 in range(len(matrix[r1])):
-			for r2 in range(r1, len(matrix)):
-				l=c1
-				r=len(matrix[r2])-1
-				while l < r:
-					c2 = (l+r)//2
-					next_move = (r1, c1, r2, c2)
-					rs = range_sum(sm, next_move)
-					#print('depth', depth, 'lrm', l, r, c2, rs, next_move)
-					if rs >= S:
-						r = c2
-					else:
-						l = c2+1
-				c2 = l
-				next_move = (r1, c1, r2, c2)
-				rs = range_sum(sm, next_move)
-				if rs == S:
-					rc = range_sum(cm, next_move)
-					next_matrix = clear_range(matrix, next_move)
-					#print('depth', depth, 'next_move', next_move, 'max_score', max_score)
-					#dump(next_matrix)
-					score, next_move_list = find_best_move2(next_matrix, depth-1)
-					if score[1] + rc > max_score[1]:
-						max_score = (rc, score[1] + rc)
-						#print('depth', depth, 'max_score', max_score, next_move, next_move_list)
-						max_score_move_list = (next_move,) + next_move_list
-				elif c2 == c1:
-					break
-	func_cache[matrix] = (max_score, max_score_move_list)
-	return func_cache[matrix]
+    max_score = (0,0)
+    max_score_move_list = tuple()
+    max_matrix = None
+    if depth > 0:
+        sm = sum_matrix(matrix)
+        cm = sum_matrix(tuple(tuple(1 if v > 0 else 0 for v in r) for r in matrix))
+        for r1 in range(len(matrix)):
+            for c1 in range(len(matrix[r1])):
+                for r2 in range(r1, len(matrix)):
+                    for c2 in range(c1, len(matrix[r2])):
+                        next_move = (r1, c1, r2, c2)
+                        rs = range_sum(sm, next_move)
+                        if rs == S:
+                            rc = range_sum(cm, next_move)
+                            next_matrix = clear_range(matrix, next_move)
+                            #print('depth', depth, 'next_move', next_move, 'max_score', max_score)
+                            #dump(next_matrix)
+                            score, next_move_list, _ = recursive_find_next_move(next_matrix, depth-1)
+                            if score[1] + rc > max_score[1]:
+                                max_score = (rc, score[1] + rc)
+                                max_score_move_list = (next_move,) + next_move_list
+                                max_matrix = next_matrix
+                                #print('new depth', depth, 'next_move_list', next_move_list, 'max_score', max_score)
+                            break
+                        elif rs > S:
+                            break
+    return (max_score, max_score_move_list, max_matrix)
+
+def find_best_move(matrix):
+    score, move_list, next_matrix = recursive_find_next_move(matrix, 2)
+    #print('return', score, move_list)
+    next_move = move_list[0] if move_list else None
+    return (score[0], next_move, next_matrix)
 
 def solve(matrix, depth):
 	score_sum = 0
