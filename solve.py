@@ -69,8 +69,8 @@ def recursive_find_next_move(matrix, depth):
                             break
     return (max_score, max_score_move_list, max_matrix)
 
-def find_best_move(matrix):
-    score, move_list, next_matrix = recursive_find_next_move(matrix, 2)
+def find_best_move(matrix, depth=2):
+    score, move_list, next_matrix = recursive_find_next_move(matrix, depth)
     #print('return', score, move_list)
     next_move = move_list[0] if move_list else None
     return (score[0], next_move, next_matrix)

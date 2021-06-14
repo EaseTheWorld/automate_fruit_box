@@ -46,12 +46,14 @@ def main(input_image_file):
     dump(number_matrix)
 
     total_score = 0
+    move_count = 0
     while True:
         score, next_move, next_number_matrix = find_best_move(number_matrix)
+        move_count += 1
         if next_move:
             total_score += score
             number_matrix = next_number_matrix
-            print('\n------------', next_move, total_score)
+            print(f'\n[{move_count}] ---------- {next_move} : {total_score}')
             dump(number_matrix)
             if v:
                 r1, c1, r2, c2 = next_move
