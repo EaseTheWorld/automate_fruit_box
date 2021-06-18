@@ -130,7 +130,7 @@ def recursive_find_next_move(matrix, depth):
             score, next_move_list, _ = recursive_find_next_move(next_matrix, depth-1)
             #print('depth', depth, 'next_move', next_move, 'max_score', max_score, score, rc)
             #dump(next_matrix)
-            if not max_score or score[1] + rc > max_score[1]:
+            if not max_score or score[1] + rc < max_score[1]:
                 max_score = (rc, score[1] + rc)
                 max_score_move_list = (next_move,) + next_move_list
                 max_matrix = next_matrix
@@ -139,7 +139,7 @@ def recursive_find_next_move(matrix, depth):
         max_score = (0,0)
     return (max_score, max_score_move_list, max_matrix)
 
-def find_best_move(matrix, depth=3):
+def find_best_move(matrix, depth=2):
     score, move_list, next_matrix = recursive_find_next_move(matrix, depth)
     #print('return', score, move_list)
     next_move = move_list[0] if move_list else None
