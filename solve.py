@@ -4,6 +4,22 @@ import functools
 
 S = 10
 
+class Move:
+
+    def __init__(self, score, rect):
+        self.score = score
+        self.r1 = rect[0]
+        self.c1 = rect[1]
+        self.r2 = rect[2]
+        self.c2 = rect[3]
+
+    def __str__(self):
+        return f'score={self.score} ({self.r1},{self.c1})-({self.r2},{self.c2})'
+
+def dump(matrix):
+	for r in matrix:
+		print(' '.join(map(lambda x : ' ' if x == 0 else str(x), r)))
+
 def clear_range(matrix, cur_range):
 	r1, c1, r2, c2 = cur_range
 	return tuple(
@@ -118,43 +134,35 @@ def find_next_candidates(matrix, given_sum):
 
 @functools.lru_cache(maxsize=None)
 def recursive_find_next_move(matrix, depth):
-    max_score = None
-    max_score_move_list = tuple()
-    max_matrix = None
+    final_score = 0
+    final_move_list = ()
+    final_matrix = matrix
+
     if depth > 0:
         cm = sum_matrix(tuple(tuple(1 if v > 0 else 0 for v in r) for r in matrix))
         next_candidates = find_next_candidates(matrix, S)
         for next_move in next_candidates:
             rc = range_sum(cm, next_move)
-            next_matrix = clear_range(matrix, next_move)
-            score, next_move_list, _ = recursive_find_next_move(next_matrix, depth-1)
-            #print('depth', depth, 'next_move', next_move, 'max_score', max_score, score, rc)
-            #dump(next_matrix)
-            if not max_score or score[1] + rc < max_score[1]:
-                max_score = (rc, score[1] + rc)
-                max_score_move_list = (next_move,) + next_move_list
-                max_matrix = next_matrix
-                #print('new depth', depth, 'next_move_list', next_move_list, 'max_score', max_score)
-    if not max_score:
-        max_score = (0,0)
-    return (max_score, max_score_move_list, max_matrix)
+            input_matrix = clear_range(matrix, next_move)
+            score, move_list, output_matrix = recursive_find_next_move(input_matrix, depth-1)
+            #print('depth', depth, 'next_move', next_move, 'final_score', final_score, score, rc)
+            #dump(input_matrix)
+            if not final_score or score + rc > final_score:
+                final_score = score + rc
+                final_move_list = (Move(rc, next_move),) + move_list
+                final_matrix = output_matrix
+                #print('new depth', depth, str(final_move_list[0]), 'final_score', final_score)
+    return final_score, final_move_list, final_matrix
 
-def find_best_move(matrix, depth=2):
-    score, move_list, next_matrix = recursive_find_next_move(matrix, depth)
-    #print('return', score, move_list)
-    next_move = move_list[0] if move_list else None
-    return (score[0], next_move, next_matrix)
-
-def solve(matrix, depth):
-	score_sum = 0
-	t1 = time.time()
-	while True:
-		score, next_move = find_best_move(matrix, depth)
-		if not next_move:
-			break
-		score_sum += score[0]
-		matrix = clear_range(matrix, next_move[0])
-		#print(score, next_move[0])
-		#dump(matrix)
-	t2 = time.time()
-	print('final score', score_sum, 'time', t2-t1)
+def find_move_list(matrix):
+    total_move_list = []
+    dump(matrix)
+    while True:
+        score, move_list, matrix = recursive_find_next_move(matrix, 2)
+        #print('return', score, move_list)
+        if move_list:
+            #dump(matrix)
+            total_move_list += move_list
+        else:
+            break
+    return total_move_list

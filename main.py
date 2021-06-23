@@ -2,12 +2,7 @@ import time
 import sys
 from canvas_view import CanvasView
 from image_process import image_file_to_matrix
-from image_process import dump
-from solve import find_best_move
-
-# TODO
-# O(whwh) -> O(wwh)
-# range trim needed
+from solve import find_move_list
 
 PUZZLE_URL = 'https://en.gamesaien.com/game/fruit_box/'
 CANVAS_ID = 'canvas'
@@ -25,6 +20,7 @@ TEMPLATE_FILE_LIST = (
 )
 
 def main(input_image_file):
+
     v = None
     if not input_image_file:
         v = CanvasView(PUZZLE_URL, CANVAS_ID)
@@ -43,10 +39,20 @@ def main(input_image_file):
 
     number_matrix, rect_matrix = image_file_to_matrix(input_image_file, TEMPLATE_FILE_LIST)
     print('converted to number matrix')
-    dump(number_matrix)
 
-    total_score = 0
-    move_count = 0
+    move_list = find_move_list(number_matrix)
+    print('total_move', len(move_list))
+    print('total_score', sum(move.score for move in move_list))
+
+    if v:
+        for move in move_list:
+            v.drag_and_drop(
+                rect_matrix[move.r1][move.c1][1],
+                rect_matrix[move.r1][move.c1][0],
+                rect_matrix[move.r2][move.c2][3],
+                rect_matrix[move.r2][move.c2][2]
+            )
+    '''
     while True:
         score, next_move, next_number_matrix = find_best_move(number_matrix)
         move_count += 1
@@ -61,6 +67,7 @@ def main(input_image_file):
                     rect_matrix[r2][c2][3], rect_matrix[r2][c2][2])
         else:
             break
+    '''
 
 input_image_file = None
 if len(sys.argv) > 1:

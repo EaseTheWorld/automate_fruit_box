@@ -2,11 +2,7 @@ import cv2
 import time
 import numpy as np
 
-def dump(matrix):
-	for r in matrix:
-		print(' '.join(map(lambda x : ' ' if x == 0 else str(x), r)))
-
-class Node:
+class Match:
     def __init__(self, y, x, h, w, label, confidence):
         self.y = y
         self.x = x
@@ -47,7 +43,7 @@ def find_image(src_png_buf, template_file, src_size):
 
 
 def pattern_recognition(src_image, template, label, dst_image=None):
-    node_list = []
+    match_list = []
     h, w = template.shape[:2]
 
     result = cv2.matchTemplate(src_image, template, cv2.TM_CCOEFF_NORMED)
@@ -59,61 +55,53 @@ def pattern_recognition(src_image, template, label, dst_image=None):
         if max_val > threshold:
             x,y = max_loc
             result[y-h//2:y+h//2+1, x-w//2:x+w//2+1] = 0
-            node_list.append(Node(y,x,h,w,label,max_val))
+            match_list.append(Match(y,x,h,w,label,max_val))
             if dst_image:
                 cv2.rectangle(dst_image, (x,y), (x+w+1, y+h+1), (0,255,0))
                 cv2.putText(dst_image, str(label), (x-5, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,0,0), 1)
-    return node_list
+    return match_list
 
-def get_node_matrix(l):
+def get_match_matrix(l):
     y_map = {}
     end_offset = -1
     y_idx = -1
-    for node in sorted(l, key = lambda node : node.y):
-        if node.y > end_offset:
+    for match in sorted(l, key = lambda match : match.y):
+        if match.y > end_offset:
             y_idx += 1
-            start_offset = node.y
-            end_offset = start_offset + node.h
-        y_map[node.y] = y_idx
+            start_offset = match.y
+            end_offset = start_offset + match.h
+        y_map[match.y] = y_idx
 
     x_map = {}
     end_offset = -1
     x_idx = -1
-    for node in sorted(l, key = lambda node : node.x):
-        if node.x > end_offset:
+    for match in sorted(l, key = lambda match : match.x):
+        if match.x > end_offset:
             x_idx += 1
-            start_offset = node.x
-            end_offset = start_offset + node.w
-        x_map[node.x] = x_idx
+            start_offset = match.x
+            end_offset = start_offset + match.w
+        x_map[match.x] = x_idx
 
-    node_matrix = list([None] * (x_idx+1) for _ in range(y_idx+1))
-    for node in l:
-        y_idx = y_map[node.y]
-        x_idx = x_map[node.x]
-        #if node_matrix[y_idx][x_idx]:
-            #print('y=', y_idx, 'x=', x_idx, 'confusing', node_matrix[y_idx][x_idx].dump(), node.dump())
-        if not node_matrix[y_idx][x_idx] or node.confidence > node_matrix[y_idx][x_idx].confidence:
-            node_matrix[y_idx][x_idx] = node
-    return node_matrix
-
-#print(l)
-
-#cv2.imwrite('output.png', dst_image)
-
-#matrix = offset_to_index(l, h, w)
-
-#dump(matrix)
+    match_matrix = list([None] * (x_idx+1) for _ in range(y_idx+1))
+    for match in l:
+        y_idx = y_map[match.y]
+        x_idx = x_map[match.x]
+        #if match_matrix[y_idx][x_idx]:
+            #print('y=', y_idx, 'x=', x_idx, 'confusing', match_matrix[y_idx][x_idx].dump(), match.dump())
+        if not match_matrix[y_idx][x_idx] or match.confidence > match_matrix[y_idx][x_idx].confidence:
+            match_matrix[y_idx][x_idx] = match
+    return match_matrix
 
 def image_file_to_matrix(image_file, template_filelist):
-    node_list = []
+    match_list = []
     src_image = cv2.imread(image_file)
     #dst_image = cv2.imread(image_file)
 
     for template_file, label in template_filelist:
         template = cv2.imread(template_file)
-        node_list += pattern_recognition(src_image, template, label)
+        match_list += pattern_recognition(src_image, template, label)
 
-    node_matrix = get_node_matrix(node_list)
-    label_matrix = tuple(tuple(map(Node.get_label, row)) for row in node_matrix)
-    rect_matrix = tuple(tuple(map(Node.get_rect, row)) for row in node_matrix)
+    match_matrix = get_match_matrix(match_list)
+    label_matrix = tuple(tuple(map(Match.get_label, row)) for row in match_matrix)
+    rect_matrix = tuple(tuple(map(Match.get_rect, row)) for row in match_matrix)
     return label_matrix, rect_matrix
