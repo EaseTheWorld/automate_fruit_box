@@ -47,8 +47,7 @@ def main(input_image_file):
     print(result_msg)
 
     if v:
-        v.popup(result_msg)
-        time.sleep(2)
+        v.popup(result_msg, 3)
         for move in move_list:
             v.drag_and_drop(
                 rect_matrix[move.r1][move.c1][1],

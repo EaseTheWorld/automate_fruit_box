@@ -51,5 +51,8 @@ class CanvasView:
         action.release()
         action.perform()
 
-    def popup(self, msg):
+    def popup(self, msg, timeout=3):
         self.driver.execute_script(f'alert(\'{msg}\');')
+        alert = self.driver.switch_to_alert()
+        time.sleep(timeout)
+        alert.accept()
