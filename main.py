@@ -56,22 +56,7 @@ def main(input_image_file):
                 rect_matrix[move.r2][move.c2][3],
                 rect_matrix[move.r2][move.c2][2]
             )
-    '''
-    while True:
-        score, next_move, next_number_matrix = find_best_move(number_matrix)
-        move_count += 1
-        if next_move:
-            total_score += score
-            number_matrix = next_number_matrix
-            print(f'\n[{move_count}] ---------- {next_move} : {total_score}')
-            dump(number_matrix)
-            if v:
-                r1, c1, r2, c2 = next_move
-                v.drag_and_drop(rect_matrix[r1][c1][1], rect_matrix[r1][c1][0],
-                    rect_matrix[r2][c2][3], rect_matrix[r2][c2][2])
-        else:
-            break
-    '''
+        input('Press Enter to end')
 
 input_image_file = None
 if len(sys.argv) > 1:
