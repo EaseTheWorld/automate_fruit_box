@@ -41,10 +41,14 @@ def main(input_image_file):
     print('converted to number matrix')
 
     move_list = find_move_list(number_matrix)
-    print('total_move', len(move_list))
-    print('total_score', sum(move.score for move in move_list))
+    total_move = len(move_list)
+    total_score = sum(move.score for move in move_list)
+    result_msg = f'total_move={total_move} total_score={total_score}'
+    print(result_msg)
 
     if v:
+        v.popup(result_msg)
+        time.sleep(2)
         for move in move_list:
             v.drag_and_drop(
                 rect_matrix[move.r1][move.c1][1],

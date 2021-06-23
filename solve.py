@@ -157,6 +157,7 @@ def recursive_find_next_move(matrix, depth):
 
 def find_move_list(matrix):
     total_move_list = []
+    print('start')
     dump(matrix)
     while True:
         score, move_list = recursive_find_next_move(matrix, 2)
@@ -166,4 +167,6 @@ def find_move_list(matrix):
             break
         if not move_list:
             break
+    print('end')
+    dump(matrix)
     return total_move_list

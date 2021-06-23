@@ -49,3 +49,6 @@ class CanvasView:
         action.move_to_element_with_offset(self.canvas, x2, y2)
         action.release()
         action.perform()
+
+    def popup(self, msg):
+        self.driver.execute_script(f'alert(\'{msg}\');')
