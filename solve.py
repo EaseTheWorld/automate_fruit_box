@@ -13,6 +13,9 @@ class Move:
         self.r2 = rect[2]
         self.c2 = rect[3]
 
+    def rect(self):
+        return (self.r1, self.c1, self.r2, self.c2)
+
     def __str__(self):
         return f'score={self.score} ({self.r1},{self.c1})-({self.r2},{self.c2})'
 
@@ -136,33 +139,31 @@ def find_next_candidates(matrix, given_sum):
 def recursive_find_next_move(matrix, depth):
     final_score = 0
     final_move_list = ()
-    final_matrix = matrix
 
     if depth > 0:
         cm = sum_matrix(tuple(tuple(1 if v > 0 else 0 for v in r) for r in matrix))
         next_candidates = find_next_candidates(matrix, S)
         for next_move in next_candidates:
             rc = range_sum(cm, next_move)
-            input_matrix = clear_range(matrix, next_move)
-            score, move_list, output_matrix = recursive_find_next_move(input_matrix, depth-1)
+            next_matrix = clear_range(matrix, next_move)
+            score, move_list = recursive_find_next_move(next_matrix, depth-1)
             #print('depth', depth, 'next_move', next_move, 'final_score', final_score, score, rc)
-            #dump(input_matrix)
-            if not final_score or score + rc > final_score:
+            #dump(next_matrix)
+            if not final_score or score + rc < final_score:
                 final_score = score + rc
                 final_move_list = (Move(rc, next_move),) + move_list
-                final_matrix = output_matrix
                 #print('new depth', depth, str(final_move_list[0]), 'final_score', final_score)
-    return final_score, final_move_list, final_matrix
+    return final_score, final_move_list
 
 def find_move_list(matrix):
     total_move_list = []
     dump(matrix)
     while True:
-        score, move_list, matrix = recursive_find_next_move(matrix, 2)
-        #print('return', score, move_list)
-        if move_list:
-            #dump(matrix)
-            total_move_list += move_list
-        else:
+        score, move_list = recursive_find_next_move(matrix, 2)
+        for move in move_list:
+            matrix = clear_range(matrix, move.rect())
+            total_move_list.append(move)
+            break
+        if not move_list:
             break
     return total_move_list
