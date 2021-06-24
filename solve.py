@@ -53,48 +53,6 @@ def dump(matrix):
 	for r in matrix:
 		print(' ', r)
 
-@functools.lru_cache(maxsize=None)
-def recursive_find_next_move1(matrix, depth):
-    max_score = (0,0)
-    max_score_move_list = tuple()
-    max_matrix = None
-    if depth > 0:
-        sm = sum_matrix(matrix)
-        cm = sum_matrix(tuple(tuple(1 if v > 0 else 0 for v in r) for r in matrix))
-        for r1 in range(len(matrix)):
-            for c1 in range(len(matrix[r1])):
-                for r2 in range(r1, len(matrix)):
-                    for c2 in range(c1, len(matrix[r2])):
-                        next_move = (r1, c1, r2, c2)
-                        rs = range_sum(sm, next_move)
-                        if rs == S:
-                            rc = range_sum(cm, next_move)
-                            next_matrix = clear_range(matrix, next_move)
-                            #print('depth', depth, 'next_move', next_move, 'max_score', max_score)
-                            #dump(next_matrix)
-                            score, next_move_list, _ = recursive_find_next_move1(next_matrix, depth-1)
-                            if score[1] + rc > max_score[1]:
-                                max_score = (rc, score[1] + rc)
-                                max_score_move_list = (next_move,) + next_move_list
-                                max_matrix = next_matrix
-                                #print('new depth', depth, 'next_move_list', next_move_list, 'max_score', max_score)
-                            break
-    return (max_score, max_score_move_list, max_matrix)
-
-def find_next_candidates_whwh(matrix, given_sum):
-    sm = sum_matrix(matrix)
-    candidates = list()
-    for r1 in range(len(matrix)):
-        for c1 in range(len(matrix[r1])):
-            for r2 in range(r1, len(matrix)):
-                for c2 in range(c1, len(matrix[r2])):
-                    next_move = (r1, c1, r2, c2)
-                    rs = range_sum(sm, next_move)
-                    if rs == given_sum:
-                        candidates.append(next_move)
-                        break
-    return candidates
-
 def find_next_candidates(matrix, given_sum):
     candidates = list()
 
@@ -161,11 +119,12 @@ def find_move_list(matrix):
     dump(matrix)
     while True:
         score, move_list = recursive_find_next_move(matrix, 2)
+        if not move_list:
+            break
         for move in move_list:
             matrix = clear_range(matrix, move.rect())
             total_move_list.append(move)
-            break
-        if not move_list:
+            # use first move only, it is better result.
             break
     print('end')
     dump(matrix)
