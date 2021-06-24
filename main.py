@@ -6,17 +6,17 @@ from solve import find_move_list
 
 PUZZLE_URL = 'https://en.gamesaien.com/game/fruit_box/'
 CANVAS_ID = 'canvas'
-PLAY_IMAGE_FILE = 'play.png'
+PLAY_IMAGE_FILE = 'data/play.png'
 TEMPLATE_FILE_LIST = (
-    ('no1.png', 1),
-    ('no2.png', 2),
-    ('no3.png', 3),
-    ('no4.png', 4),
-    ('no5.png', 5),
-    ('no6.png', 6),
-    ('no7.png', 7),
-    ('no8.png', 8),
-    ('no9.png', 9)
+    ('data/no1.png', 1),
+    ('data/no2.png', 2),
+    ('data/no3.png', 3),
+    ('data/no4.png', 4),
+    ('data/no5.png', 5),
+    ('data/no6.png', 6),
+    ('data/no7.png', 7),
+    ('data/no8.png', 8),
+    ('data/no9.png', 9)
 )
 
 def main(input_image_file):
